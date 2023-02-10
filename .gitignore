@@ -1,0 +1,16 @@
+results/
+debug/
+__pycache__/
+.python-version
+venv/
+site/
+regression.*
+.DS_Store
+*.egg-info/
+*.json
+*.ipynb
+*.swp
+*.diff
+*.rs
+.ipynb_checkpoints/*
+node_modules/

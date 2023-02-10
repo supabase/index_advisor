@@ -1,0 +1,50 @@
+name: test 
+
+on:
+  pull_request:
+  push: { branches: master }
+
+jobs:
+
+  build-linux-gnu:
+    name: release artifacts
+    needs:
+      - release
+    strategy:
+      matrix:
+        postgres: [14, 15]
+    runs-on: { runner: ubuntu-20.04, arch: amd64 }
+    timeout-minutes: 20 
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: run tests
+        run: |
+          # Add postgres package repo
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo tee /etc/apt/trusted.gpg.d/pgdg.asc &>/dev/null
+
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends git build-essential libpq-dev curl libreadline6-dev zlib1g-dev pkg-config cmake
+          sudo apt-get install -y --no-install-recommends libreadline-dev zlib1g-dev flex bison libxml2-dev libxslt-dev libssl-dev libxml2-utils xsltproc ccache
+          sudo apt-get install -y --no-install-recommends clang libclang-dev gcc
+
+          # Install requested postgres version
+          sudo apt install -y postgresql-${{ matrix.postgres }} postgresql-server-dev-${{ matrix.postgres }} -y
+
+          # Ensure installed pg_config is first on path
+          export PATH=$PATH:/usr/lib/postgresql/${{ matrix.postgres }}/bin
+
+          # Install hypopg
+          git clone https://github.com/HypoPG/hypopg.git
+          cd hypopg
+          make install
+          
+          # Install index_advisor
+          cd ..
+          make install
+
+          # Run tests
+          make installcheck
+
+

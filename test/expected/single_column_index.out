@@ -1,0 +1,9 @@
+create extension index_advisor;
+ERROR:  extension "index_advisor" already exists
+select
+    optimal_indexes($$ select 1 $$);
+     optimal_indexes      
+--------------------------
+ create index abc as ...;
+(1 row)
+
