@@ -4,6 +4,6 @@ begin;
 
     create table if not exists public.book(id int, name text);
 
-    select optimal_indexes($$ select * from book where id = $1 $$);
+    select index_advisor($$ select * from book where id = $1 $$);
 
 rollback;
