@@ -37,7 +37,7 @@ jobs:
           # Install hypopg
           git clone https://github.com/HypoPG/hypopg.git
           cd hypopg
-          make install
+          sudo make install
 
           # Install index_advisor
           cd ..
