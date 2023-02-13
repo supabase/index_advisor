@@ -1,4 +1,4 @@
-name: test 
+name: test
 
 on:
   pull_request:
@@ -14,7 +14,7 @@ jobs:
       matrix:
         postgres: [14, 15]
     runs-on: { runner: ubuntu-20.04, arch: amd64 }
-    timeout-minutes: 20 
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v3
 
@@ -39,12 +39,10 @@ jobs:
           git clone https://github.com/HypoPG/hypopg.git
           cd hypopg
           make install
-          
+
           # Install index_advisor
           cd ..
           make install
 
           # Run tests
           make installcheck
-
-
