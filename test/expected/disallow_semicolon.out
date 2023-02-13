@@ -1,0 +1,6 @@
+drop extension if exists index_advisor;
+create extension index_advisor;
+select
+    optimal_indexes($$ select 1; $$);
+ERROR:  query must not contain a semicolon
+CONTEXT:  PL/pgSQL function optimal_indexes(text) line 15 at RAISE

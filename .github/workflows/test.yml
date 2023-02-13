@@ -6,7 +6,7 @@ on:
 
 jobs:
 
-  build-linux-gnu:
+  run-test:
     name: release artifacts
     needs:
       - release
