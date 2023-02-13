@@ -7,14 +7,13 @@ on:
 jobs:
 
   run-test:
-    name: release artifacts
-    needs:
-      - release
+    runs-on: ubuntu-20.04
+    timeout-minutes: 20
+
     strategy:
       matrix:
         postgres: [14, 15]
-    runs-on: ubuntu-20.04
-    timeout-minutes: 20
+
     steps:
       - uses: actions/checkout@v3
 
