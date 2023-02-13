@@ -1,5 +1,7 @@
-drop extension if exists index_advisor;
-create extension index_advisor;
+begin;
 
-select
-    optimal_indexes($$ select 1; $$);
+    create extension index_advisor;
+
+    select optimal_indexes($$ select 1; $$);
+
+rollback;

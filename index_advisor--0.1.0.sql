@@ -1,7 +1,7 @@
 create function optimal_indexes(
     query text
 )
-    returns record
+    returns table( index_staement text )
     volatile
     language plpgsql
     as $$
@@ -11,11 +11,10 @@ declare
 	hypopg_schema_name text = (select extnamespace::regnamespace::text from pg_extension where extname = 'hypopg');
 	explain_plan_statement text;
     rec record;
-    plan_initial json;
-    plan_final json;
-    index_statements text[] = '{}';
+    plan_initial jsonb;
+    plan_final jsonb;
+    statements text[] = '{}';
 begin
-
 
         -- Disallow multiple statements
         if query ilike '%;%' then
@@ -37,10 +36,10 @@ begin
                 1
         );
 
-
         -- Create a SQL statement that can be executed to collect the explain plan
         explain_plan_statement = format(
             'set local plan_cache_mode = force_generic_plan; explain (format json) execute %I%s',
+            --'explain (format json) execute %I%s',
             prepared_statement_name,
             case
                 when n_args = 0 then ''
@@ -93,15 +92,16 @@ begin
                 execute rec.hypopg_statement;
             end loop;
 
+
+    -- Create a prepared statement for the given query
+    -- The original prepared statement MUST be dropped because its plan is cached
+    execute format('deallocate %I', prepared_statement_name);
+    execute format('prepare %I as %s', prepared_statement_name, query);
+
     -- Store the query plan after new indexes
     execute explain_plan_statement into plan_final; 
 
-    for rec in (select * from hypopg())
-        loop
-            raise notice '%', rec;
-        end loop;
-
-
+    -- Idenfity referenced indexes in new plan
 	execute format(
 		'select
 			coalesce(array_agg(hypopg_get_indexdef(indexrelid)), $i${}$i$::text[])
@@ -112,14 +112,14 @@ begin
 		',
 		hypopg_schema_name,
         quote_literal(plan_final)::text
-	) into index_statements;
+	) into statements;
 
     -- Reset all hypothetical indexes
-    --perform hypopg_reset();
+    perform hypopg_reset();
     -- Delete the prepared statement
-    --perform format('deallocate %I', prepared_statement_name);
+    perform format('deallocate %I', prepared_statement_name);
 
-    return (index_statements, plan_initial, plan_final);
+    return query select * from unnest(statements);
 
 end;
 $$;
