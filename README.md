@@ -1,5 +1,15 @@
 # Index Advisor
 
+<p>
+<a href=""><img src="https://img.shields.io/badge/postgresql-13+-blue.svg" alt="PostgreSQL version" height="18"></a>
+<a href="https://github.com/supabase/index_advisor/blob/master/LICENSE"><img src="https://img.shields.io/pypi/l/markdown-subtemplate.svg" alt="License" height="18"></a>
+<a href="https://github.com/supabase/index_advisor/actions"><img src="https://github.com/supabase/index_advisor/actions/workflows/test.yml/badge.svg" alt="tests" height="18"></a>
+
+</p>
+
+---
+
+
 A PostgreSQL extension for recommending indexes to improve query performance.
 
 Features:
@@ -10,7 +20,9 @@ Features:
 
 ## API
 
-### index_advisor(query text) returns table( index_statement text )
+```sql
+index_advisor(query text) returns table( index_statement text )
+```
 
 #### Description
 For a given *query*, searches for a set of SQL DDL `create index` statements that improve the query's execution time;
