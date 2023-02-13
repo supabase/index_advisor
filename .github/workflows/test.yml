@@ -41,7 +41,7 @@ jobs:
 
           # Install index_advisor
           cd ..
-          make install
+          sudo make install
 
           # Run tests
           make installcheck
