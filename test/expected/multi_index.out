@@ -1,5 +1,6 @@
 begin;
-    create extension index_advisor;
+    create extension index_advisor cascade;
+NOTICE:  installing required extension "hypopg"
     create table author(
         id serial primary key,
         name text not null

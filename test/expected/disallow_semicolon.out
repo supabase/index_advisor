@@ -1,5 +1,6 @@
 begin;
-    create extension index_advisor;
+    create extension index_advisor cascade;
+NOTICE:  installing required extension "hypopg"
     select index_advisor($$ select 1; $$);
 ERROR:  query must not contain a semicolon
 CONTEXT:  PL/pgSQL function index_advisor(text) line 15 at RAISE

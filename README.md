@@ -30,7 +30,7 @@ index_advisor(
 For a minimal example, the `index_advisor` function can be given a single table query with a filter on an unindexed column.
 
 ```sql
-create extension index_advisor cascade;
+create extension if not exists index_advisor cascade;
 
 create table if not exists public.book(
     id int,
@@ -48,7 +48,7 @@ select
 More complex queries may generate additional suggested indexes
 
 ```sql
-create extension index_advisor;
+create extension if not exists index_advisor cascade;
 
 create table author(
 	id serial primary key,
