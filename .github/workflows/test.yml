@@ -13,7 +13,6 @@ jobs:
     strategy:
       matrix:
         postgres: [14, 15]
-    runs-on: { runner: ubuntu-20.04, arch: amd64 }
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v3
