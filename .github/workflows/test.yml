@@ -46,6 +46,8 @@ jobs:
           cd ..
           sudo make install
 
+          sudo systemctl start postgresql.service
+
           # Run tests
           #chown -R postgres /home/github/actions-runner/_work/index_advisor
           PGUSER=postgres make installcheck
