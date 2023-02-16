@@ -49,11 +49,29 @@ jobs:
           sudo systemctl start postgresql.service
           sudo systemctl status postgresql.service
 
-          psql -c 'select 1;'
-
           # Run tests
           #chown -R postgres /home/github/actions-runner/_work/index_advisor
-          PGUSER=postgres make installcheck
+          TMPDIR="$(mktemp -d)"
+          export PGDATA="$TMPDIR"
+          export PGHOST="$TMPDIR"
+          export PGUSER=postgres
+          export PGDATABASE=postgres
+          export PGTZ=UTC
+          export PG_COLOR=auto
+
+          rm -rf "$TMPDIR"
+          initdb --no-locale --encoding=UTF8 --nosync -U "$PGUSER"
+          createdb contrib_regression
+          TESTDIR="test"
+          PGXS=$(dirname `pg_config --pgxs`)
+          REGRESS="${PGXS}/../test/regress/pg_regress"
+
+          # Collect Test List
+          TESTS=$(ls ${TESTDIR}/sql | sed -e 's/\..*$//' | sort )
+
+          # Run tests
+          ${REGRESS} --use-existing --dbname=contrib_regression --inputdir=${TESTDIR} ${TESTS}
+
 
       - uses: actions/upload-artifact@v3
         if: always()
