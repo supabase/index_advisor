@@ -7,7 +7,7 @@ on:
 jobs:
 
   run-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     timeout-minutes: 20
 
     strategy:
@@ -26,21 +26,32 @@ jobs:
 
       - name: run tests
         run: |
-          apt-get update && apt-get install build-essential postgresql-server-dev-${{ matrix.postgres }} -y
+          # Add postgres package repo
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo tee /etc/apt/trusted.gpg.d/pgdg.asc &>/dev/null
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends git build-essential libpq-dev curl libreadline6-dev zlib1g-dev pkg-config cmake
+          sudo apt-get install -y --no-install-recommends libreadline-dev zlib1g-dev flex bison libxml2-dev libxslt-dev libssl-dev libxml2-utils xsltproc ccache
+          sudo apt-get install -y --no-install-recommends clang libclang-dev gcc
+          # Install requested postgres version
+          sudo apt install -y postgresql-${{ matrix.postgres }} postgresql-server-dev-${{ matrix.postgres }} -y
 
           # Ensure installed pg_config is first on path
           export PATH=$PATH:/usr/lib/postgresql/${{ matrix.postgres }}/bin
 
           cd hypopg
-          make
-          make install
+          sudo make install
 
           # Install index_advisor
           cd ..
-          make
-          make install
+          sudo make install
 
           # Run tests
-          make installcheck
+          su postgres -c 'make installcheck'
 
-          cat regression.out
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: regression.out
+          path: regression.out
+          retention-days: 7
