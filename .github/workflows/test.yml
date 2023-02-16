@@ -47,6 +47,9 @@ jobs:
           sudo make install
 
           sudo systemctl start postgresql.service
+          sudo systemctl status postgresql.service
+
+          psql -c 'select 1;'
 
           # Run tests
           #chown -R postgres /home/github/actions-runner/_work/index_advisor
