@@ -44,6 +44,6 @@ jobs:
           sudo make install
 
           # Run tests
-          PGHOST=localhost; make installcheck
+          PGHOST=localhost; sudo make installcheck
 
           cat regression.diffs
