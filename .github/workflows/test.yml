@@ -47,7 +47,8 @@ jobs:
           sudo make install
 
           # Run tests
-          su postgres -c 'make installcheck'
+          #chown -R postgres /home/github/actions-runner/_work/index_advisor
+          PGUSER=postgres make installcheck
 
       - uses: actions/upload-artifact@v3
         if: always()
