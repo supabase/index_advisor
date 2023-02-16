@@ -5,9 +5,9 @@ on:
   push: { branches: main }
 
 jobs:
-
   run-test:
     runs-on: ubuntu-latest
+    container: pgxn/pgxn-tools
     timeout-minutes: 20
 
     strategy:
@@ -15,6 +15,12 @@ jobs:
         postgres: [15]
 
     steps:
+      - name: Start PostgreSQL ${{ matrix.pg }}
+        run: pg-start ${{ matrix.pg }}
+
+      - name: Install build-dependencies
+        run: apt-get install -y liblz4-dev libreadline-dev zlib1g-dev libzstd-dev
+
       - uses: actions/checkout@v3
 
       - name: checkout hypopg
@@ -24,55 +30,27 @@ jobs:
           ref: 'debian/1.3.1-2'
           path: ./hypopg
 
-      - name: run tests
+      - name: Create tests directory
+        run: sudo -u postgres mkdir /tmp/tests
+
+      - name: Create tests tablespace
+        run: sudo -u postgres psql -c "CREATE TABLESPACE testts LOCATION '/tmp/tests'"
+
+      - name: Create Database
+        run: sudo -u postgres psql -c 'CREATE DATABASE contrib_regression;'
+
+      - name: install hypopg
         run: |
-          # Add postgres package repo
-          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-          wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo tee /etc/apt/trusted.gpg.d/pgdg.asc &>/dev/null
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends git build-essential libpq-dev curl libreadline6-dev zlib1g-dev pkg-config cmake
-          sudo apt-get install -y --no-install-recommends libreadline-dev zlib1g-dev flex bison libxml2-dev libxslt-dev libssl-dev libxml2-utils xsltproc ccache
-          sudo apt-get install -y --no-install-recommends clang libclang-dev gcc
-          # Install requested postgres version
-          sudo apt install -y postgresql-${{ matrix.postgres }} postgresql-server-dev-${{ matrix.postgres }} -y
-
-          # Ensure installed pg_config is first on path
-          export PATH=$PATH:/usr/lib/postgresql/${{ matrix.postgres }}/bin
-
           cd hypopg
           sudo make install
-
-          # Install index_advisor
           cd ..
-          sudo make install
 
-          sudo systemctl start postgresql.service
-          sudo systemctl status postgresql.service
+      - name: Test index-advisor on PG-${{ matrix.pg }}
+        run: pg-build-test
 
-          # Run tests
-          #chown -R postgres /home/github/actions-runner/_work/index_advisor
-          TMPDIR="$(mktemp -d)"
-          export PGDATA="$TMPDIR"
-          export PGHOST="$TMPDIR"
-          export PGUSER=postgres
-          export PGDATABASE=postgres
-          export PGTZ=UTC
-          export PG_COLOR=auto
-
-          rm -rf "$TMPDIR"
-          initdb --no-locale --encoding=UTF8 --nosync -U "$PGUSER"
-          pg_ctl start -o "-F -c listen_addresses=\"\" -c log_min_messages=WARNING -k $PGDATA"
-          createdb contrib_regression
-          TESTDIR="test"
-          PGXS=$(dirname `pg_config --pgxs`)
-          REGRESS="${PGXS}/../test/regress/pg_regress"
-
-          # Collect Test List
-          TESTS=$(ls ${TESTDIR}/sql | sed -e 's/\..*$//' | sort )
-
-          # Run tests
-          ${REGRESS} --use-existing --dbname=contrib_regression --inputdir=${TESTDIR} ${TESTS}
-
+      - name: Show regression.diffs
+        if: ${{ failure() }}
+        run: cat regress/regression.diffs
 
       - uses: actions/upload-artifact@v3
         if: always()
