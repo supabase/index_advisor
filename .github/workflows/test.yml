@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        postgres: [15]
+        pg: [15]
 
     steps:
       - name: Start PostgreSQL ${{ matrix.pg }}
