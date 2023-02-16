@@ -61,6 +61,7 @@ jobs:
 
           rm -rf "$TMPDIR"
           initdb --no-locale --encoding=UTF8 --nosync -U "$PGUSER"
+          pg_ctl start -o "-F -c listen_addresses=\"\" -c log_min_messages=WARNING -k $PGDATA"
           createdb contrib_regression
           TESTDIR="test"
           PGXS=$(dirname `pg_config --pgxs`)
