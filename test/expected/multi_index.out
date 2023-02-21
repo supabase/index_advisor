@@ -22,6 +22,8 @@ NOTICE:  installing required extension "hypopg"
         body text not null
     );
     select
+        *
+    from
         index_advisor('
             select
                 book.id,
@@ -41,11 +43,9 @@ NOTICE:  installing required extension "hypopg"
                 author.id = $1
                 and publisher.id = $2
         ');
-                     index_advisor                      
---------------------------------------------------------
- CREATE INDEX ON public.book USING btree (author_id)
- CREATE INDEX ON public.book USING btree (publisher_id)
- CREATE INDEX ON public.review USING btree (book_id)
-(3 rows)
+ startup_cost_before | startup_cost_after | total_cost_before | total_cost_after |                                                                            index_statements                                                                            
+---------------------+--------------------+-------------------+------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.26               | 12.77              | 68.48             | 42.37            | {"CREATE INDEX ON public.book USING btree (author_id)","CREATE INDEX ON public.book USING btree (publisher_id)","CREATE INDEX ON public.review USING btree (book_id)"}
+(1 row)
 
 rollback;

@@ -1,7 +1,21 @@
+create type index_advisor_output as (
+    index_statements text[],
+    startup_cost_before jsonb,
+    startup_cost_after jsonb,
+    total_cost_before jsonb,
+    total_cost_after jsonb
+);
+
 create function index_advisor(
     query text
 )
-    returns table( index_statement text )
+    returns table  (
+        startup_cost_before jsonb,
+        startup_cost_after jsonb,
+        total_cost_before jsonb,
+        total_cost_after jsonb,
+        index_statements text[]
+    )
     volatile
     language plpgsql
     as $$
@@ -20,6 +34,9 @@ begin
     if query ilike '%;%' then
         raise exception 'query must not contain a semicolon';
     end if;
+
+    -- Hack to support PostgREST because the prepared statement for args incorrectly defaults to text
+    query := replace(query, 'WITH pgrst_payload AS (SELECT $1 AS json_data)', 'WITH pgrst_payload AS (SELECT $1::json AS json_data)');
 
     -- Create a prepared statement for the given query
     deallocate all;
@@ -137,7 +154,13 @@ begin
     -- Reset prepared statements
     deallocate all;
 
-    return query select * from unnest(statements);
+    return query values (
+        (plan_initial -> 0 -> 'Plan' -> 'Startup Cost'),
+        (plan_final -> 0 -> 'Plan' -> 'Startup Cost'),
+        (plan_initial -> 0 -> 'Plan' -> 'Total Cost'),
+        (plan_final -> 0 -> 'Plan' -> 'Total Cost'),
+        statements::text[]
+    );
 
 end;
 $$;

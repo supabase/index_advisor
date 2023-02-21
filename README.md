@@ -9,6 +9,38 @@
 
 ---
 
+```sql
+select
+    *
+from
+    index_advisor('
+        select
+            book.id,
+            book.title,
+            publisher.name as publisher_name,
+            author.name as author_name,
+            review.body review_body
+        from
+            book
+            join publisher
+                on book.publisher_id = publisher.id
+            join author
+                on book.author_id = author.id
+            join review
+                on book.id = review.book_id
+        where
+            author.id = $1
+            and publisher.id = $2
+    ');
+
+ startup_cost_before | startup_cost_after | total_cost_before | total_cost_after |                  index_statements
+---------------------+--------------------+-------------------+------------------+----------------------------------------------------------
+ 27.26               | 12.77              | 68.48             | 42.37            | {"CREATE INDEX ON public.book USING btree (author_id)",
+                                                                                    "CREATE INDEX ON public.book USING btree (publisher_id)",
+                                                                                    "CREATE INDEX ON public.review USING btree (book_id)"}
+(1 row)
+```
+
 
 A PostgreSQL extension for recommending indexes to improve query performance.
 

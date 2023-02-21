@@ -27,6 +27,8 @@ begin;
     );
 
     select
+        *
+    from
         index_advisor('
             select
                 book.id,

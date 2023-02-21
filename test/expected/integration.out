@@ -1,16 +1,16 @@
 begin;
     create extension index_advisor cascade;
 NOTICE:  installing required extension "hypopg"
-create table public.book(
-    id int,
-    name text
-);
-select index_advisor($$
-    select * from book where id = $1
-$$);
-                index_advisor                 
-----------------------------------------------
- CREATE INDEX ON public.book USING btree (id)
+    create table public.book(
+        id int,
+        name text
+    );
+    select index_advisor($$
+        select * from book where id = $1
+    $$);
+                                index_advisor                                 
+------------------------------------------------------------------------------
+ (0.00,4.07,25.88,13.54,"{""CREATE INDEX ON public.book USING btree (id)""}")
 (1 row)
 
 rollback;
