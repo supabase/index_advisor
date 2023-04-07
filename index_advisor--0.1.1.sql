@@ -94,7 +94,6 @@ begin
                 and (select array_agg(x) from unnest(pi.indkey) v(x)) = array[pa.attnum]
                 and pi.indexprs is null -- ignore expression indexes
                 and pi.indpred is null -- ignore partial indexes
-                and pa.atttypid in (20,16,1082,1184,1114,701,23,21,700,1083,2950,1700,25,18,1042,1043)
         where
             pc.relnamespace::regnamespace::text not in ( -- ignore schema list
                 'pg_catalog', 'pg_toast', 'information_schema'
@@ -105,6 +104,7 @@ begin
             and pa.attnum > 0
             and not pa.attisdropped
             and pi.indrelid is null
+            and pa.atttypid in (20,16,1082,1184,1114,701,23,21,700,1083,2950,1700,25,18,1042,1043)
         )
         loop
             -- Create the hypothetical index

@@ -1,0 +1,18 @@
+begin;
+    create extension index_advisor version '0.1.1' cascade;
+NOTICE:  installing required extension "hypopg"
+    create table public.book(
+        id int,
+        -- json type is not btree indexable. In version 0.1.1 this raises the error
+        -- ERROR:  data type json has no default operator class for access method "btree"
+        meta json
+    );
+    select index_advisor($$
+        select * from book where id = $1
+    $$);
+                                index_advisor                                 
+------------------------------------------------------------------------------
+ (0.00,4.07,25.88,13.54,"{""CREATE INDEX ON public.book USING btree (id)""}")
+(1 row)
+
+rollback;
