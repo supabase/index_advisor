@@ -1,5 +1,5 @@
 begin;
-    create extension index_advisor cascade;
+    create extension index_advisor version '0.1.1' cascade;
 NOTICE:  installing required extension "hypopg"
     create table public.book(
         id int,
