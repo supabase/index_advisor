@@ -1,6 +1,6 @@
 begin;
 
-    create extension index_advisor version '0.1.2' cascade;
+    create extension index_advisor version '0.2.0' cascade;
 
     create function get_info(x int) returns text language sql as $$ select 'foo' $$;
 

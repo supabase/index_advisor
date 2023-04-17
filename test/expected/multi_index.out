@@ -1,5 +1,5 @@
 begin;
-    create extension index_advisor version '0.1.2' cascade;
+    create extension index_advisor version '0.2.0' cascade;
 NOTICE:  installing required extension "hypopg"
     create table author(
         id serial primary key,
@@ -43,9 +43,9 @@ NOTICE:  installing required extension "hypopg"
                 author.id = $1
                 and publisher.id = $2
         ');
- startup_cost_before | startup_cost_after | total_cost_before | total_cost_after |                                                                            index_statements                                                                            
----------------------+--------------------+-------------------+------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.26               | 12.77              | 68.48             | 42.37            | {"CREATE INDEX ON public.book USING btree (author_id)","CREATE INDEX ON public.book USING btree (publisher_id)","CREATE INDEX ON public.review USING btree (book_id)"}
+ startup_cost_before | startup_cost_after | total_cost_before | total_cost_after |                                                                            index_statements                                                                            | errors 
+---------------------+--------------------+-------------------+------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------
+ 27.26               | 12.77              | 68.48             | 42.37            | {"CREATE INDEX ON public.book USING btree (author_id)","CREATE INDEX ON public.book USING btree (publisher_id)","CREATE INDEX ON public.review USING btree (book_id)"} | {}
 (1 row)
 
 rollback;

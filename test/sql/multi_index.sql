@@ -1,6 +1,6 @@
 begin;
 
-    create extension index_advisor version '0.1.2' cascade;
+    create extension index_advisor version '0.2.0' cascade;
 
     create table author(
         id serial primary key,

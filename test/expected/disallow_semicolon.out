@@ -1,7 +1,18 @@
 begin;
-    create extension index_advisor version '0.1.2' cascade;
+    create extension index_advisor version '0.2.0' cascade;
 NOTICE:  installing required extension "hypopg"
-    select index_advisor($$ select 1; $$);
-ERROR:  query must not contain a semicolon
-CONTEXT:  PL/pgSQL function index_advisor(text) line 24 at RAISE
+    -- This is okay because semicolon gets stripped from the end of the statement
+    select * from index_advisor($$ select 1; $$);
+ startup_cost_before | startup_cost_after | total_cost_before | total_cost_after | index_statements | errors 
+---------------------+--------------------+-------------------+------------------+------------------+--------
+ 0.00                | 0.00               | 0.01              | 0.01             | {}               | {}
+(1 row)
+
+    -- This is not okay because it contains multiple statements
+    select * from index_advisor($$ select 1; select 1 $$);
+ startup_cost_before | startup_cost_after | total_cost_before | total_cost_after | index_statements |                 errors                 
+---------------------+--------------------+-------------------+------------------+------------------+----------------------------------------
+                     |                    |                   |                  | {}               | {"Query must not contain a semicolon"}
+(1 row)
+
 rollback;

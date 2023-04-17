@@ -1,6 +1,6 @@
 begin;
     -- Semicolons should be allowed in comments because they are common in prep stmts
-    create extension index_advisor version '0.1.2' cascade;
+    create extension index_advisor version '0.2.0' cascade;
 NOTICE:  installing required extension "hypopg"
     create table public.book(
         id int,
@@ -10,9 +10,9 @@ NOTICE:  installing required extension "hypopg"
         -- some comment with a semicolon;
         select * from book where id = $1
     $$);
-                                index_advisor                                 
-------------------------------------------------------------------------------
- (0.00,4.07,25.88,13.54,"{""CREATE INDEX ON public.book USING btree (id)""}")
+                                  index_advisor                                  
+---------------------------------------------------------------------------------
+ (0.00,4.07,25.88,13.54,"{""CREATE INDEX ON public.book USING btree (id)""}",{})
 (1 row)
 
 rollback;
