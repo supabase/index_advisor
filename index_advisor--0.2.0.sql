@@ -17,6 +17,7 @@ declare
     prepared_statement_name text = 'index_advisor_working_statement';
     hypopg_schema_name text = (select extnamespace::regnamespace::text from pg_extension where extname = 'hypopg');
     explain_plan_statement text;
+    error_message text;
     rec record;
     plan_initial jsonb;
     plan_final jsonb;
@@ -35,17 +36,12 @@ begin
     -- Remove trailing semicolon
     query := regexp_replace(query, ';\s*$', '');
 
-    -- Disallow multiple statements
-    if query ilike '%;%' then
-        return query values (
-            null::jsonb,
-            null::jsonb,
-            null::jsonb,
-            null::jsonb,
-            array[]::text[],
-            array['Query must not contain a semicolon']::text[]
-        );
-    else
+    begin
+        -- Disallow multiple statements
+        if query ilike '%;%' then
+            raise exception 'Query must not contain a semicolon';
+        end if;
+
         -- Hack to support PostgREST because the prepared statement for args incorrectly defaults to text
         query := replace(query, 'WITH pgrst_payload AS (SELECT $1 AS json_data)', 'WITH pgrst_payload AS (SELECT $1::json AS json_data)');
 
@@ -87,7 +83,7 @@ begin
                 select
                     distinct objid as oid
                 from
-                    pg_depend
+                    pg_catalog.pg_depend
                 where
                     deptype = 'e'
             )
@@ -108,7 +104,7 @@ begin
                     on pc.oid = pa.attrelid
                 left join extension_regclass er
                     on pc.oid = er.oid
-                left join pg_index pi
+                left join pg_catalog.pg_index pi
                     on pc.oid = pi.indrelid
                     and (select array_agg(x) from unnest(pi.indkey) v(x)) = array[pa.attnum]
                     and pi.indexprs is null -- ignore expression indexes
@@ -174,8 +170,21 @@ begin
             statements::text[],
             array[]::text[]
         );
+        return;
 
-    end if;
+    exception when others then
+        get stacked diagnostics error_message = MESSAGE_TEXT;
+
+        return query values (
+            null::jsonb,
+            null::jsonb,
+            null::jsonb,
+            null::jsonb,
+            array[]::text[],
+            array[error_message]::text[]
+        );
+        return;
+    end;
 
 end;
 $$;

@@ -1,0 +1,15 @@
+begin;
+    -- Semicolons should be allowed in comments because they are common in prep stmts
+    create extension index_advisor version '0.2.0' cascade;
+NOTICE:  installing required extension "hypopg"
+    select * from index_advisor(
+      'SELECT concat(schemaname, $1, tablename, $2, policyname) as policy
+        FROM   pg_policies
+        ORDER  BY 1 desc'
+    );
+ startup_cost_before | startup_cost_after | total_cost_before | total_cost_after | index_statements |                      errors                       
+---------------------+--------------------+-------------------+------------------+------------------+---------------------------------------------------
+                     |                    |                   |                  | {}               | {"could not determine data type of parameter $1"}
+(1 row)
+
+rollback;
