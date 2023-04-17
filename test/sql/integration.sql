@@ -1,6 +1,6 @@
 begin;
 
-    create extension index_advisor version '0.1.1' cascade;
+    create extension index_advisor version '0.1.2' cascade;
 
     create table public.book(
         id int,

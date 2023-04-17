@@ -1,4 +1,4 @@
 comment = 'Query index advisor'
-default_version = '0.1.1'
+default_version = '0.1.2'
 relocatable = true
 requires = hypopg
