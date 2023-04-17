@@ -9,39 +9,6 @@
 
 ---
 
-```sql
-select
-    *
-from
-    index_advisor('
-        select
-            book.id,
-            book.title,
-            publisher.name as publisher_name,
-            author.name as author_name,
-            review.body review_body
-        from
-            book
-            join publisher
-                on book.publisher_id = publisher.id
-            join author
-                on book.author_id = author.id
-            join review
-                on book.id = review.book_id
-        where
-            author.id = $1
-            and publisher.id = $2
-    ');
-
- startup_cost_before | startup_cost_after | total_cost_before | total_cost_after |                  index_statements
----------------------+--------------------+-------------------+------------------+----------------------------------------------------------
- 27.26               | 12.77              | 68.48             | 42.37            | {"CREATE INDEX ON public.book USING btree (author_id)",
-                                                                                    "CREATE INDEX ON public.book USING btree (publisher_id)",
-                                                                                    "CREATE INDEX ON public.review USING btree (book_id)"}
-(1 row)
-```
-
-
 A PostgreSQL extension for recommending indexes to improve query performance.
 
 Features:
@@ -52,21 +19,21 @@ Features:
 
 ## API
 
-```sql
-index_advisor(query text) returns table( index_statement text )
-```
-
 #### Description
 For a given *query*, searches for a set of SQL DDL `create index` statements that improve the query's execution time;
 
 #### Signature
 ```sql
-index_advisor(
-    query text
-)
-    returns table( index_statement text )
-    volatile
-    language plpgsql
+index_advisor(query text)
+returns
+    table  (
+        startup_cost_before jsonb,
+        startup_cost_after jsonb,
+        total_cost_before jsonb,
+        total_cost_after jsonb,
+        index_statements text[],
+        errors text[]
+    )
 ```
 
 ## Usage
@@ -76,17 +43,20 @@ For a minimal example, the `index_advisor` function can be given a single table 
 ```sql
 create extension if not exists index_advisor cascade;
 
-create table if not exists public.book(
-    id int,
-    name text
+create table book(
+  id int primary key,
+  title text not null
 );
 
 select
-    index_advisor($$ select * from book where id = $1 $$);
+    *
+from
+  index_advisor('select book.id from book where title = $1');
 
-                index_advisor
-----------------------------------------------
- CREATE INDEX ON public.book USING btree (id)
+ startup_cost_before | startup_cost_after | total_cost_before | total_cost_after |                  index_statements                   | errors
+---------------------+--------------------+-------------------+------------------+-----------------------------------------------------+--------
+ 0.00                | 1.17               | 25.88             | 6.40             | {"CREATE INDEX ON public.book USING btree (title)"},| {}
+(1 row)
 ```
 
 More complex queries may generate additional suggested indexes
@@ -119,6 +89,8 @@ create table review(
 );
 
 select
+    *
+from
     index_advisor('
         select
             book.id,
@@ -139,11 +111,11 @@ select
             and publisher.id = $2
     ');
 
-                     index_advisor
---------------------------------------------------------
- CREATE INDEX ON public.review USING btree (book_id)
- CREATE INDEX ON public.book USING btree (author_id)
- CREATE INDEX ON public.book USING btree (publisher_id)
+ startup_cost_before | startup_cost_after | total_cost_before | total_cost_after |                  index_statements                         | errors
+---------------------+--------------------+-------------------+------------------+-----------------------------------------------------------+--------
+ 27.26               | 12.77              | 68.48             | 42.37            | {"CREATE INDEX ON public.book USING btree (author_id)",   | {}
+                                                                                    "CREATE INDEX ON public.book USING btree (publisher_id)",
+                                                                                    "CREATE INDEX ON public.review USING btree (book_id)"}
 (3 rows)
 ```
 

@@ -1,15 +1,14 @@
 begin;
-
+    -- Semicolons should be allowed in comments because they are common in prep stmts
     create extension index_advisor version '0.2.0' cascade;
 
     create table public.book(
         id int,
-        -- json type is not btree indexable. In version 0.1.1 this raises the error
-        -- ERROR:  data type json has no default operator class for access method "btree"
-        meta json
+        name text
     );
 
     select index_advisor($$
+        -- some comment with a semicolon;
         select * from book where id = $1
     $$);
 
