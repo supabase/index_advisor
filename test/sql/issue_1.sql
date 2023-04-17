@@ -4,7 +4,9 @@ begin;
 
     create table public.book(
         id int,
-        name text
+        -- json type is not btree indexable. In version 0.1.1 this raises the error
+        -- ERROR:  data type json has no default operator class for access method "btree"
+        meta json
     );
 
     select index_advisor($$
