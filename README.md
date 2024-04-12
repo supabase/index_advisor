@@ -2,16 +2,17 @@
 
 <p>
 <a href=""><img src="https://img.shields.io/badge/postgresql-13+-blue.svg" alt="PostgreSQL version" height="18"></a>
-<a href="https://github.com/supabase/index_advisor/blob/master/LICENSE"><img src="https://img.shields.io/pypi/l/markdown-subtemplate.svg" alt="License" height="18"></a>
+<a href="https://github.com/supabase/index_advisor/blob/master/LICENSE"><img src="https://img.shields.io/github/license/supabase/index_advisor" alt="License" height="18"></a>
 <a href="https://github.com/supabase/index_advisor/actions"><img src="https://github.com/supabase/index_advisor/actions/workflows/test.yml/badge.svg" alt="tests" height="18"></a>
 
 </p>
 
----
-
 A PostgreSQL extension for recommending indexes to improve query performance.
 
-Features:
+![Dashboard](./docs/img/dashboard.png)
+
+## Features
+
 - Supports generic parameters e.g. `$1`, `$2`
 - Supports materialized views
 - Identifies tables/columns obfuscaed by views
@@ -53,9 +54,13 @@ select
 from
   index_advisor('select book.id from book where title = $1');
 
+```
+
+```markdown
  startup_cost_before | startup_cost_after | total_cost_before | total_cost_after |                  index_statements                   | errors
 ---------------------+--------------------+-------------------+------------------+-----------------------------------------------------+--------
  0.00                | 1.17               | 25.88             | 6.40             | {"CREATE INDEX ON public.book USING btree (title)"},| {}
+
 (1 row)
 ```
 
@@ -111,6 +116,9 @@ from
             and publisher.id = $2
     ');
 
+```
+
+```markdown
  startup_cost_before | startup_cost_after | total_cost_before | total_cost_after |                  index_statements                         | errors
 ---------------------+--------------------+-------------------+------------------+-----------------------------------------------------------+--------
  27.26               | 12.77              | 68.48             | 42.37            | {"CREATE INDEX ON public.book USING btree (author_id)",   | {}
