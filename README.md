@@ -1,4 +1,4 @@
-# Index Advisor
+# PostgreSQL Index Advisor
 
 <p>
 <a href=""><img src="https://img.shields.io/badge/postgresql-13+-blue.svg" alt="PostgreSQL version" height="18"></a>
