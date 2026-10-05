@@ -12,7 +12,7 @@ NOTICE:  installing required extension "hypopg"
     select extversion from pg_extension where extname = 'index_advisor';
  extversion 
 ------------
- 0.2.0
+ 0.2.1
 (1 row)
 
     create table public.book(
