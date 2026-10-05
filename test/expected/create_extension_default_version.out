@@ -1,0 +1,15 @@
+begin;
+    -- Unversioned CREATE EXTENSION must resolve through the full upgrade
+    -- chain (0.1.0 -> 0.1.1 -> 0.1.2 -> default_version), since only 0.1.0
+    -- exists as a standalone install script - everything after that is only
+    -- reachable via incremental upgrade scripts. Confirms the chain is
+    -- unbroken end to end, not just reachable via an explicit version pin.
+    create extension index_advisor cascade;
+NOTICE:  installing required extension "hypopg"
+    select extversion from pg_extension where extname = 'index_advisor';
+ extversion 
+------------
+ 0.2.0
+(1 row)
+
+rollback;
