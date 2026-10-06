@@ -1,4 +1,6 @@
-create or replace function index_advisor(
+drop function index_advisor(text);
+
+create function index_advisor(
     query text
 )
     returns table  (
