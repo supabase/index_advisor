@@ -28,7 +28,7 @@ begin
     query := trim(
         regexp_replace(
             regexp_replace(
-                regexp_replace(query,'\/\*.+?\*\/', '', 'g'),
+                regexp_replace(query,'\/\*.+\*\/', '', 'g'),
             '--[^\r\n]*', ' ', 'g'),
         '\s+', ' ', 'g')
     );
@@ -46,9 +46,7 @@ begin
         query := replace(query, 'WITH pgrst_payload AS (SELECT $1 AS json_data)', 'WITH pgrst_payload AS (SELECT $1::json AS json_data)');
 
         -- Create a prepared statement for the given query
-        if exists (select 1 from pg_prepared_statements where name = prepared_statement_name) then
-            execute format('deallocate %I', prepared_statement_name);
-        end if;
+        deallocate all;
         execute format('prepare %I as %s', prepared_statement_name, query);
 
         -- Detect how many arguments are present in the prepared statement
@@ -163,9 +161,7 @@ begin
         execute format('select %I.hypopg_reset()', hypopg_schema_name);
 
         -- Reset prepared statements
-        if exists (select 1 from pg_prepared_statements where name = prepared_statement_name) then
-            execute format('deallocate %I', prepared_statement_name);
-        end if;
+        deallocate all;
 
         return query values (
             (plan_initial -> 0 -> 'Plan' -> 'Startup Cost'),
