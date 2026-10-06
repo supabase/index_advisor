@@ -1,0 +1,27 @@
+begin;
+    -- index_advisor used to call bare "deallocate all", which wipes every
+    -- prepared statement in the session - not just its own internal one.
+    -- In a pooled/persistent connection (PostgREST, pgbouncer session mode)
+    -- this silently breaks whatever else that connection had prepared.
+    -- Confirms an unrelated prepared statement survives a call.
+    create extension index_advisor cascade;
+NOTICE:  installing required extension "hypopg"
+    create table public.book(
+        id int
+    );
+    prepare unrelated_statement as select 1;
+    select index_advisor($$
+        select * from book where id = $1
+    $$);
+                                  index_advisor                                  
+---------------------------------------------------------------------------------
+ (0.00,4.13,41.88,14.83,"{""CREATE INDEX ON public.book USING btree (id)""}",{})
+(1 row)
+
+    select name from pg_prepared_statements where name = 'unrelated_statement';
+        name         
+---------------------
+ unrelated_statement
+(1 row)
+
+rollback;
